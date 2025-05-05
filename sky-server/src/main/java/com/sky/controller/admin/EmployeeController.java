@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.web.bind.annotation.PutMapping;
+
 
 /**
  * 员工管理
@@ -115,6 +117,25 @@ public class EmployeeController {
     public Result startOrStop(@PathVariable Integer status, Long id) {
         log.info("启用或禁用员工,参数为:{},{}", status, id);
         employeeService.startOrStop(status, id);
+        return Result.success();
+    }
+
+
+    @GetMapping("/{id}")
+    @ApiOperation("根据id查询员工信息")
+    // 因为是查询性的操作所以需要有范形
+    public Result<Employee> getById(@PathVariable Long id) {
+        log.info("根据id查询员工,参数为:{}", id);
+        Employee employee = employeeService.getById(id);
+        return Result.success(employee);
+    }
+
+    @PutMapping // 不需路径应为类里加过了
+    @ApiOperation("编辑员工信息")
+    // 提交的是json格式所以需要requestbody
+    public Result update(@RequestBody EmployeeDTO employeeDTO) {
+        log.info("修改员工信息,参数为:{}", employeeDTO);
+        employeeService.update(employeeDTO);
         return Result.success();
     }
 
