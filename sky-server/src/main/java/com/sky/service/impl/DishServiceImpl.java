@@ -1,0 +1,60 @@
+package com.sky.service.impl;
+
+import java.util.List;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.sky.dto.DishDTO;
+import com.sky.entity.Dish;
+import com.sky.entity.DishFlavor;
+import com.sky.mapper.DishFlavorMapper;
+import com.sky.mapper.DishMapper;
+import com.sky.service.DishService;
+import lombok.extern.slf4j.Slf4j;
+
+@Service
+@Slf4j
+public class DishServiceImpl implements DishService {
+
+    @Autowired
+    private DishMapper dishMapper;
+
+    @Autowired
+    private DishFlavorMapper dishFlavorMapper;
+
+    /**
+     * 新增菜品和对应的口味数据
+     * @param dishDTO
+     */
+    @Transactional
+    public void saveWithFlavor(DishDTO dishDTO) {
+        log.info("新增菜品：{}", dishDTO);
+        // 因为dishDTO中有菜品的基本信息和口味信息，所以需要将其拆分成两个对象
+        Dish dish = new Dish();
+        //1.将dishDTO中的基本信息拷贝到dish中
+        BeanUtils.copyProperties(dishDTO, dish);
+
+        //1.向餐品表添加一个菜品
+        dishMapper.insert(dish);
+
+        //获取菜品id 通过dish对象的id属性 从xml生成的 获取insert语句的主键值
+        Long dishId = dish.getId();
+
+        //2.向菜品口味表添加n的口味数据
+        List<DishFlavor> flavors = dishDTO.getFlavors();
+        // 口味数据是否存在
+        if (flavors != null && flavors.size() > 0) {
+            flavors.forEach(dishFlavor -> {
+                //设置菜品id
+                dishFlavor.setDishId(dishId);
+            });
+            dishFlavorMapper.insertBatch( flavors);
+        }
+    }
+
+
+    
+}

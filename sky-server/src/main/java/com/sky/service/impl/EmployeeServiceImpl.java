@@ -83,17 +83,19 @@ public class EmployeeServiceImpl implements EmployeeService {
         // 对象属性拷贝 因为employeeDTO中有的属性employee都有
         BeanUtils.copyProperties(employeeDTO,employee); 
 
-        // 补全不重复的属性
-        // 设置status 
+        
+        // 设置账号状态正常是1锁定是0
         employee.setStatus(StatusConstant.ENABLE);
+
         // 设置默认密码 在POJO我们有constant
         employee.setPassword(DigestUtils.md5DigestAsHex(PasswordConstant.DEFAULT_PASSWORD.getBytes()));
-        // 设置创建时间和修改时间
-        employee.setCreateTime(LocalDateTime.now());
-        employee.setUpdateTime(LocalDateTime.now());
-        // 设置创建人id和修改人id
-        employee.setCreateUser(BaseContext.getCurrentId());
-        employee.setUpdateUser(BaseContext.getCurrentId());
+        
+        // 已经在AOP中实现了不需要自己再设置了
+
+        // employee.setCreateTime(LocalDateTime.now());
+        // employee.setUpdateTime(LocalDateTime.now());
+        // employee.setCreateUser(BaseContext.getCurrentId());
+        // employee.setUpdateUser(BaseContext.getCurrentId());
 
         employeeMapper.insert(employee);
     }
@@ -150,9 +152,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = new Employee();
         // 对象属性拷贝
         BeanUtils.copyProperties(employeeDTO, employee);
-        // 补全不重复的属性
-        employee.setUpdateTime(LocalDateTime.now()); // 设置更新时间
-        employee.setUpdateUser(BaseContext.getCurrentId()); // 设置更新人id
+
+        // 已经不需要了AOP做过了
+        
+        // employee.setUpdateTime(LocalDateTime.now()); // 设置更新时间
+        // employee.setUpdateUser(BaseContext.getCurrentId()); // 设置更新人id
 
         // 调用mapper方法进行更新操作
         employeeMapper.update(employee);
