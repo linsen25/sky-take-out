@@ -17,6 +17,11 @@ spring:
       validation-query: SELECT 1
       time-between-eviction-runs-millis: 60000
       min-evictable-idle-time-millis: 300000
+  redis:
+    host: ${sky.redis.host}
+    port: ${sky.redis.port}
+    password: ${sky.redis.password}
+    database: ${sky.redis.database}
 
 mybatis:
   #mapper配置文件
@@ -36,12 +41,21 @@ logging:
 
 sky:
   jwt:
+    # 管理端令牌
     # 设置jwt签名加密时使用的秘钥
     admin-secret-key: itcast
     # 设置jwt过期时间
     admin-ttl: 7200000
     # 设置前端传递过来的令牌名称
     admin-token-name: token
+
+    # 用户端令牌
+    # 设置jwt签名加密时使用的秘钥
+    user-secret-key: ithema
+    # 设置jwt过期时间
+    user-ttl: 7200000
+    # 设置前端传递过来的令牌名称
+    user-token-name: authentication 
 
   alioss: # 在common中的alioss properties 有属性类
     # 阿里云oss的endpoint
@@ -52,3 +66,10 @@ sky:
     access-key-secret: ${sky.oss.access-key-secret}
     # 阿里云oss的bucket名称
     bucket-name: ${sky.oss.bucket-name}
+    
+  wechat:
+    # 微信小程序的AppID
+    appid: ${sky.wechat.appid}
+    # 微信小程序的AppSecret
+    secret: ${sky.wechat.secret}
+    # 微信小程序的支付商户号

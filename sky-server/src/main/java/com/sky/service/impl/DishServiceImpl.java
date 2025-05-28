@@ -1,5 +1,6 @@
 package com.sky.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.BeanUtils;
@@ -120,9 +121,106 @@ public class DishServiceImpl implements DishService {
         // 根据菜品id集合批量删除菜品口味数据
         dishFlavorMapper.deleteByDishIds(ids);
          // sql: delete from dish_flavor where dish_id in (?,?,?)
+    }
+
+
+    /**
+     * 根据id查询菜品
+     * @param id
+     * @return
+     */
+    public DishVO getByIdWithFlavor(Long id) {
+        //1.根据id查询菜品
+        Dish dish = dishMapper.getById(id);
+        if (dish == null) {
+            // 如果未查询到菜品，抛出异常或返回空结果
+            throw new IllegalArgumentException("菜品不存在，id: " + id);
+        }
+        //2.根据菜品查口味信息
+        List<DishFlavor> flavors = dishFlavorMapper.getByDishId(id);
+        //3.将菜品基本信息和口味信息封装到DishVO中
+        DishVO dishVO = new DishVO();
+        BeanUtils.copyProperties(dish, dishVO);// categoryName 不需要所以拷贝不过来没有关系
+        dishVO.setFlavors(flavors);
+        return dishVO;
+    }
+
+
+    /**
+     * 修改菜品
+     * @param dishDTO
+     */
+    @Transactional
+    public void updateWithFlavor(DishDTO dishDTO) {
+        log.info("修改菜品：{}", dishDTO);
+        //1.将dishDTO中的基本信息拷贝到dish中
+        Dish dish = new Dish();
+        BeanUtils.copyProperties(dishDTO, dish);
         
+        //2.修改菜品表中的基本信息
+        dishMapper.update(dish);
+        //3.修改菜品口味表中的口味信息
+        //3.1 先删除菜品口味表中的口味信息
+        dishFlavorMapper.deleteByDishIds(List.of(dish.getId()));
+        //3.2 再添加菜品口味表中的口味信息
+        List<DishFlavor> flavors = dishDTO.getFlavors();
+        // 口味数据是否存在
+        if (flavors != null && flavors.size() > 0) {
+            flavors.forEach(dishFlavor -> {
+                //新增的口味数据是没有dish_id的，所以需要设置
+                dishFlavor.setDishId(dish.getId());
+            });
+            dishFlavorMapper.insertBatch(flavors);
+        }
+    }
+    
+    /**
+     * 修改菜品状态
+     * @param status
+     * @param id
+     */
+    public void startOrStop(Integer status, Long id) {
+        log.info("修改菜品状态：{}, {}", status, id);
+        dishMapper.updateStatus(status, id);
+    }
 
 
+    /**
+     * 根据分类id查询菜品
+     * @param categoryId
+     * @return
+    */
+    public List<Dish> list(Long categoryId) {
+        Dish dish = Dish.builder()
+            .categoryId(categoryId)
+            .status(StatusConstant.ENABLE)
+            .build();
+        return dishMapper.list(dish);
+    }
+
+
+    /**
+     * 条件查询菜品和口味
+     * @param dish
+     * @return
+     */
+    public List<DishVO> listWithFlavor(Dish dish) {
+        List<Dish> dishList = dishMapper.list(dish);
+
+        List<DishVO> dishVOList = new ArrayList<>();
+
+        for (Dish d : dishList) {
+            DishVO dishVO = new DishVO();
+            BeanUtils.copyProperties(d,dishVO);
+
+            //根据菜品id查询对应的口味
+            List<DishFlavor> flavors = dishFlavorMapper.getByDishId(d.getId());
+
+            dishVO.setFlavors(flavors);
+            dishVOList.add(dishVO);
+        }
+
+        return dishVOList;
     }
 
 

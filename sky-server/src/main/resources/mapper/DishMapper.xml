@@ -9,6 +9,36 @@
         values(#{name}, #{categoryId}, #{price}, #{image}, #{description}, #{status}, #{createTime}, #{updateTime})
     </insert>
 
+    <!-- update -->
+    <update id="update">
+        update dish
+        <set>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="categoryId != null">
+                category_id = #{categoryId},
+            </if>
+            <if test="price != null">
+                price = #{price},
+            </if>
+            <if test="image != null">
+                image = #{image},
+            </if>
+            <if test="description != null">
+                description = #{description},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime}
+            </if>
+
+        </set>
+        where id = #{id}
+    </update>
+
     <!-- delete -->
     <delete id="delete">
         delete from dish where id in 
@@ -35,4 +65,38 @@
         order by d.update_time desc
 
     </select>
-</mapper>
+
+    
+
+    <!-- updateStatus --> 
+
+    <update id="updateStatus" parameterType="com.sky.entity.Dish">
+        update dish
+        <set>
+            <if test="status != null">
+                status = #{status}
+            </if>
+        </set>
+         WHERE id = #{id}
+    </update>
+
+    <!-- list --> 
+
+    <select id="list" resultType="Dish" parameterType="Dish">
+        select d.*,c.name as categoryName from dish d left outer join category c on d.category_id = c.id
+        <where>
+            <if test="name != null">
+                and d.name like concat('%', #{name}, '%')
+            </if>
+            <if test="categoryId != null">
+                and d.category_id = #{categoryId}
+            </if>
+            <if test="status != null">
+                and d.status = #{status}
+            </if>
+        </where>
+        order by d.update_time desc
+    </select>
+    
+    
+    </mapper>
